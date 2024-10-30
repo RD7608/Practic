@@ -35,6 +35,8 @@ class Price:
                 print(' > обработан')
             else:
                 print(' > пропущен')
+            # Сортировка списка товаров по наименованию и цене за кг
+            self.data.sort(key=lambda x: (x[0], x[4]))  # x[0] — название, x[4] — цена за кг
 
     @staticmethod
     def _search_product_price_weight(headers):  # Функция поиска колонок
@@ -49,10 +51,10 @@ class Price:
 
         return product_col, price_col, weight_col
 
-    # Поиск по тексту в названии товара и сортировка по цене
+    # Поиск по тексту в названии товара
     def find_text(self, text):
         results = [item for item in self.data if text.lower() in item[0].lower()]  # Фильтрация по тексту
-        results.sort(key=lambda x: x[4])  # Сортировка по цене за кг
+        #        results.sort(key=lambda x: x[4])  # Сортировка по цене за кг
         return results
 
     # Функция экспорта в HTML
@@ -60,6 +62,7 @@ class Price:
         result = '''<!DOCTYPE html>
         <html>
         <head>
+            <meta charset="utf-8">
             <title>Позиции продуктов</title>
         </head>
         <body>
@@ -90,7 +93,7 @@ class Price:
 
     def add_query(self, query):
         # Проверка на дублирование (существуют ли старые запросы в новом)
-        if any(previous_query in query for previous_query in self.previous_queries):
+        if any(previous_query in query.lower() for previous_query in self.previous_queries):
             # Вывод предупреждения
             print("\033[93mПредупреждение: Этот запрос уже содержит старые запросы.\033[0m")
             # Спрашиваем пользователя, хочет ли он продолжить поиск
@@ -99,7 +102,7 @@ class Price:
                 return False  # Если пользователь ответил не "да", возвращаем False
 
         # Добавление нового запроса в список
-        self.previous_queries.append(query)
+        self.previous_queries.append(query.lower())
         return True
 
 
@@ -107,16 +110,20 @@ class Price:
 if __name__ == "__main__":
     pm = Price()
     pm.load_prices('files/')
+    pm.export_to_html('output.html')
+    print("\033[32mДанные из прайс-листов сохранены в output.html.\033[0m")
     print('')
     all_results = []  # Список для хранения всех найденных результатов
+    print(f"\033[1;32mДля поиска товаров введите фрагмент названия товара \n\033[33mВведите\033[31m 'exit'\033[33m для вывода результатов поиска и выхода из программы.\033[0m")
+    print('')
     while True:
-        query = input("Введите фрагмент названия товара (или 'exit' для завершения): ")
-        if query.lower() == 'exit':
+        query = input(f"\033[1mВведите текст для поиска или 'exit': \033[0m")
+        if query.lower() == 'exit' or query.lower() == 'учше':
             break
         if pm.add_query(query):
             results = pm.find_text(query)
-            all_results.extend(results)  # Добавляем найденные результаты в общий список
-            print(f"Найдено {len(results)} позиций.")
+            all_results.extend(results)  # Добавляем найденные результаты в список результатов
+            print(f"\033[3mНайдено {len(results)} позиций.\033[0m")
 
     if all_results:
         print(f"\nВсего найдено {len(all_results)} позиций.")
@@ -127,13 +134,13 @@ if __name__ == "__main__":
         for idx, (name, price, weight, filename, price_per_kg) in enumerate(all_results):
             print(f"{idx + 1:<4} {name:<25} {price:>10.2f} {weight:>10.2f} {filename:>15} {price_per_kg:>15.2f}")
 
-        export = input('Вы хотите сохранить результаты в файл? (да(Y)/нет(N)): ')
-        if export.lower() == 'да' or export.lower() == 'y':
-            pm.data = all_results  # Устанавливаем найденные данные как список для экспорта в HTML
-            pm.export_to_html('output.html')
-            print("Результаты сохранены в output.html.")
-        else:
-            print("Результаты не сохранены.")
+#        export = input('Вы хотите сохранить результаты в файл? (да(Y)/нет(N)): ')
+#        if export.lower() == 'да' or export.lower() == 'y':
+#           pm.data = all_results  # Устанавливаем найденные данные как список для экспорта в HTML
+#            pm.export_to_html('output.html')
+#            print("Результаты сохранены в output.html.")
+#        else:
+#            print("Результаты не сохранены.")
     else:
         print("Ничего не найдено.")
 
