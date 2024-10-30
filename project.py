@@ -122,7 +122,7 @@ if __name__ == "__main__":
         if pm.add_query(query):
             results = pm.find_text(query)
             all_results.extend(results)  # Добавляем найденные результаты в список результатов
-            print(Fore.BLUE + f"Найдено {len(results)} позиций." + Style.RESET_ALL)
+            print(Fore.CYAN+ f"Найдено {len(results)} позиций." + Style.RESET_ALL)
 
     if all_results:
         print(f"\nВсего найдено {len(all_results)} позиций.")
